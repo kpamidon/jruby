@@ -60,7 +60,7 @@ public class JavaUtilities {
     @JRubyMethod(module = true, visibility = Visibility.PRIVATE)
     public static IRubyObject register_converter(ThreadContext context, IRubyObject recv, IRubyObject source, IRubyObject target, IRubyObject converter, Block block) {
         if (block.isGiven()) {
-            context.runtime.getWarnings().warn("block passed to `reigster_converter' ignored");
+            context.runtime.getWarnings().warn("block passed to `register_converter' ignored");
         }
 
         if (!(source instanceof RubyClass)) {
