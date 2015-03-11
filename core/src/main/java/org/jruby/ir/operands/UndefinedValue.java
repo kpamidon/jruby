@@ -399,4 +399,9 @@ public class UndefinedValue extends Operand implements IRubyObject {
     public void visit(IRVisitor visitor) {
         visitor.UndefinedValue(this);
     }
+
+    @Override
+    public boolean canCoerceTo(Class target) {
+        return false;
+    }
 }

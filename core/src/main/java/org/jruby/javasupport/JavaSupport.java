@@ -111,4 +111,10 @@ public abstract class JavaSupport {
     public abstract ClassValue<Map<String, AssignedName>> getStaticAssignedNames();
 
     public abstract ClassValue<Map<String, AssignedName>> getInstanceAssignedNames();
+
+    public abstract void registerConverter(RubyClass source, Class target, JavaUtil.RubyToJava converter);
+
+    public abstract void registerConverter(RubyClass source, Class target, IRubyObject converter);
+
+    public abstract JavaUtil.RubyToJava getRegisteredConverter(RubyClass source, Class target);
 }

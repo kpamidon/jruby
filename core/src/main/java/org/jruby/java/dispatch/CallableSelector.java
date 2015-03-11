@@ -295,8 +295,13 @@ public class CallableSelector {
 
     private static Matcher EXACT = new Matcher() {
         public boolean match(Class type, IRubyObject arg) {
-            return type.equals(argClass(arg))
-                    || (type.isPrimitive() && CodegenUtils.getBoxType(type) == argClass(arg));
+            if (arg == null) {
+                if (type.isPrimitive()) return false;
+                return true;
+            } else if (arg.canCoerceTo(type)) {
+                return true;
+            }
+            return false;
         }
     };
 

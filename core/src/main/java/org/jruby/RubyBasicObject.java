@@ -668,6 +668,15 @@ public class RubyBasicObject implements Cloneable, IRubyObject, Serializable, Co
         return getClass();
     }
 
+    /**
+     * @see IRubyObject#canCoerceTo(Class)
+     */
+    @Override
+    public boolean canCoerceTo(Class target) {
+        return target.equals(getJavaClass()) ||
+                getRuntime().getJavaSupport().getRegisteredConverter(getMetaClass().getRealClass(), target) != null;
+    }
+
     /** rb_to_id
      *
      * Will try to convert this object to a String using the Ruby
@@ -835,6 +844,11 @@ public class RubyBasicObject implements Cloneable, IRubyObject, Serializable, Co
             }
         } else if (target.isAssignableFrom(getClass())) {
             return this;
+        } else {
+            JavaUtil.RubyToJava converter = getRuntime().getJavaSupport().getRegisteredConverter(getMetaClass().getRealClass(), target);
+            if (converter != null) {
+                return converter.convert(getRuntime().getCurrentContext(), this);
+            }
         }
         
         throw getRuntime().newTypeError("cannot convert instance of " + getClass() + " to " + target);

@@ -1208,7 +1208,12 @@ public class RubyNumeric extends RubyObject {
 
     @Override
     public Object toJava(Class target) {
-        return JavaUtil.getNumericConverter(target).coerce(this, target);
+        JavaUtil.NumericConverter converter = JavaUtil.getNumericConverter(target);
+        if (converter == JavaUtil.NUMERIC_TO_OTHER) {
+            return super.toJava(target);
+        }
+
+        return converter.coerce(this, target);
     }
 
     public static class InvalidIntegerException extends NumberFormatException {

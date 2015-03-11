@@ -186,6 +186,11 @@ public interface IRubyObject {
      * @return Class
      */
     Class getJavaClass();
+
+    /**
+     * Return true if this object can coerce to the given target Java class, false otherwise.
+     */
+    boolean canCoerceTo(Class target);
     
     /**
      * Convert the object into a symbol name if possible.

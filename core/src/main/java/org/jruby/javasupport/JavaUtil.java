@@ -475,13 +475,21 @@ public class JavaUtil {
 
         return nameSet;
     }
+
+    public interface RubyToJava {
+        public Object convert(ThreadContext context, IRubyObject object);
+    }
     
     public static abstract class JavaConverter {
         private final Class type;
         public JavaConverter(Class type) {this.type = type;}
         public abstract IRubyObject convert(Ruby runtime, Object object);
-        public abstract IRubyObject get(Ruby runtime, Object array, int i);
-        public abstract void set(Ruby runtime, Object array, int i, IRubyObject value);
+        public IRubyObject get(Ruby runtime, Object array, int i) {
+            return convert(runtime, Array.get(array, i));
+        }
+        public void set(Ruby runtime, Object array, int i, IRubyObject value) {
+            Array.set(array, i, value.toJava(type));
+        }
         public String toString() {return type.getName() + " converter";}
     }
 
@@ -899,7 +907,7 @@ public class JavaUtil {
             }
         }
     };
-    private static final NumericConverter NUMERIC_TO_OTHER = new NumericConverter() {
+    public static final NumericConverter NUMERIC_TO_OTHER = new NumericConverter() {
         public Object coerce(RubyNumeric numeric, Class target) {
             if (target.isAssignableFrom(numeric.getClass())) {
                 // just return as-is, since we can't do any coercion

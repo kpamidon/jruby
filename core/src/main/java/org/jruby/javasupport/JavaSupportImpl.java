@@ -33,7 +33,14 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby.javasupport;
 
+import org.jruby.java.proxies.JavaProxy;
 import org.jruby.javasupport.binding.AssignedName;
+import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.callsite.CachingCallSite;
+import org.jruby.runtime.callsite.FunctionalCachingCallSite;
+import org.jruby.runtime.opto.Invalidator;
+import org.jruby.runtime.opto.OptoFactory;
+import org.jruby.util.TypeConverter;
 import org.jruby.util.collections.MapBasedClassValue;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -42,6 +49,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -75,6 +83,8 @@ public class JavaSupportImpl extends JavaSupport {
     private final ClassValue<Map<String, AssignedName>> staticAssignedNames;
     private final ClassValue<Map<String, AssignedName>> instanceAssignedNames;
     private static final Constructor<? extends ClassValue> CLASS_VALUE_CONSTRUCTOR;
+    private final Map<RubyClass, Map<Class, JavaUtil.RubyToJava>> registeredConverters;
+    private final Invalidator registeredConverterInvalidator;
 
     static {
         Constructor constructor = null;
@@ -167,6 +177,9 @@ public class JavaSupportImpl extends JavaSupport {
         catch (InvocationTargetException ex) {
             throw new RuntimeException(ex.getTargetException());
         }
+
+        registeredConverters = new WeakHashMap<>();
+        registeredConverterInvalidator = OptoFactory.newConstantInvalidator();
     }
 
     public Class loadJavaClass(String className) throws ClassNotFoundException {
@@ -370,6 +383,37 @@ public class JavaSupportImpl extends JavaSupport {
 
     public ClassValue<Map<String, AssignedName>> getInstanceAssignedNames() {
         return instanceAssignedNames;
+    }
+
+    public synchronized void registerConverter(RubyClass source, Class target, JavaUtil.RubyToJava converter) {
+        Map<Class, JavaUtil.RubyToJava> classToConverter = registeredConverters.get(source);
+        if (classToConverter == null) {
+            registeredConverters.put(source, classToConverter = new WeakHashMap<Class, JavaUtil.RubyToJava>());
+        }
+        classToConverter.put(target, converter);
+
+        registeredConverterInvalidator.invalidate();
+    }
+
+    public synchronized JavaUtil.RubyToJava getRegisteredConverter(RubyClass source, Class target) {
+        Map<Class, JavaUtil.RubyToJava> classToConverter = registeredConverters.get(source);
+        if (classToConverter == null) return null;
+
+        return classToConverter.get(target);
+    }
+
+    public void registerConverter(RubyClass source, Class target, final IRubyObject converter) {
+        JavaUtil.RubyToJava rubyToJava = new JavaUtil.RubyToJava() {
+            CachingCallSite site = new FunctionalCachingCallSite("call");
+            @Override
+            public Object convert(ThreadContext context, IRubyObject object) {
+                Object result = site.call(runtime.getCurrentContext(), converter, converter, object);
+                if (result instanceof JavaProxy) result = ((JavaProxy)result).getObject();
+                return result;
+            }
+        };
+
+        registerConverter(source, target, rubyToJava);
     }
 
     @Deprecated
