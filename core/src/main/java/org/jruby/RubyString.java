@@ -2088,7 +2088,6 @@ public class RubyString extends RubyObject implements EncodingCapable, MarshalEn
         result.associateEncoding(resultEnc);
 
         boolean isUnicode = StringSupport.isUnicode(enc);
-        boolean asciiCompat = enc.isAsciiCompatible();
 
         EncodingDB.Entry e = null;
         CaseInsensitiveBytesHash<EncodingDB.Entry> encodings = runtime.getEncodingService().getEncodings();
@@ -2101,7 +2100,6 @@ public class RubyString extends RubyObject implements EncodingCapable, MarshalEn
             } else if (c0 == 0xFF && c1 == 0xFE) {
                 e = encodings.get("UTF-16LE".getBytes());
             } else {
-                e = encodings.get("ASCII-8BIT".getBytes());
                 isUnicode = false;
             }
         } else if (enc == encodings.get("UTF-32".getBytes()).getEncoding() && end - p > 3) {
@@ -2115,7 +2113,6 @@ public class RubyString extends RubyObject implements EncodingCapable, MarshalEn
             } else if (c3 == 0 && c2 == 0 && c1 == 0xFE && c0 == 0xFF) {
                 e = encodings.get("UTF-32LE".getBytes());
             } else {
-                e = encodings.get("ASCII-8BIT".getBytes());
                 isUnicode = false;
             }
         }
@@ -2140,13 +2137,13 @@ public class RubyString extends RubyObject implements EncodingCapable, MarshalEn
             }
             int c = enc.mbcToCode(bytes, p, end);
             p += n;
-            if ((asciiCompat || isUnicode) &&
+            if ((enc.isAsciiCompatible() || isUnicode) &&
                     (c == '"' || c == '\\' ||
                         (c == '#' && p < end && (StringSupport.preciseLength(enc, bytes, p, end) > 0) &&
                         (cc = codePoint(runtime, enc, bytes, p, end)) == '$' || cc == '@' || cc == '{'))) {
                 if (p - n > prev) result.cat(bytes, prev, p - n - prev);
                 result.cat('\\');
-                if (asciiCompat || enc == resultEnc) {
+                if (enc.isAsciiCompatible() || enc == resultEnc) {
                     prev = p - n;
                     continue;
                 }
@@ -2172,7 +2169,7 @@ public class RubyString extends RubyObject implements EncodingCapable, MarshalEn
                 continue;
             }
 
-            if ((enc == resultEnc && enc.isPrint(c)) || (asciiCompat && Encoding.isAscii(c) && enc.isPrint(c))) {
+            if ((enc == resultEnc && enc.isPrint(c)) || (enc.isAsciiCompatible() && Encoding.isAscii(c) && enc.isPrint(c))) {
                 continue;
             } else {
                 if (p - n > prev) result.cat(bytes, prev, p - n - prev);
