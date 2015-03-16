@@ -27,8 +27,6 @@ matrix:
     # these profile do no need to run for all JDKs
     - env: PHASE='-Pjruby-jars,test -Dinvoker.test=extended'
       jdk: oraclejdk7
-    - env: PHASE='-Pmain,test -Dinvoker.test=extended'
-      jdk: openjdk7
   fast_finish: true
 
 

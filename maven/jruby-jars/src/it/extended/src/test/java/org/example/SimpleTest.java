@@ -92,15 +92,15 @@ public class SimpleTest {
     // 	runIt("objectspace");
     // }
 
-    @Test
-    public void testMRI() throws Exception {
-        runIt("mri", "ENV['EXCLUDE_DIR']='test/mri/excludes';");
-    }
-
-    @Test
-    public void testSlow() throws Exception {
-       	runIt("slow");
-    }
+//    @Test
+//    public void testMRI() throws Exception {
+//        runIt("mri", "ENV['EXCLUDE_DIR']='test/mri/excludes';");
+//    }
+//
+//    @Test
+//    public void testSlow() throws Exception {
+//       	runIt("slow");
+//    }
 
     @Test
     public void testJRuby() throws Exception {
