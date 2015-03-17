@@ -18,7 +18,7 @@ public class SimpleTest {
 
     private ScriptingContainer newScriptingContainer() {
 	ScriptingContainer container = new ScriptingContainer(LocalContextScope.SINGLETHREAD);
-    container.setArgv(new String[]{"-v"})
+    container.setArgv(new String[]{"-v"});
 	container.setCurrentDirectory(basedir);
     	container.getProvider().getRubyInstanceConfig().setLoadPaths(Arrays.asList(".", "test", "test/mri", "test/mri/ruby"));
 	container.runScriptlet("ENV['GEM_PATH']='lib/ruby/gems/shared'");
