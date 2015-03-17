@@ -12,8 +12,8 @@ before_script:
   - echo $HOME
 
 jdk:
-  - openjdk7
-#  - oraclejdk8
+#  - openjdk7
+  - oraclejdk8
 
 os:
   - linux
@@ -26,7 +26,7 @@ matrix:
   include:
     # these profile do no need to run for all JDKs
     - env: PHASE='-Pjruby-jars,test -Dinvoker.test=extended'
-      jdk: oraclejdk7
+      jdk: oraclejdk8
   fast_finish: true
 
 
